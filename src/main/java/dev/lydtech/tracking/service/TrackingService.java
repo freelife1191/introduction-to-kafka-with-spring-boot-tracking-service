@@ -17,7 +17,7 @@ public class TrackingService {
     private static final String TRACKING_STATUS_TOPIC = "tracking.status";
     private final KafkaTemplate<String, Object> kafkaProducer;
 
-    public void process(DispatchPreparing dispatchPreparing) throws ExecutionException, InterruptedException {
+    public void process(DispatchPreparing dispatchPreparing) throws Exception {
         log.info("Received dispatch preparing message : " + dispatchPreparing);
 
         TrackingStatusUpdated trackingStatusUpdated = TrackingStatusUpdated.builder()
