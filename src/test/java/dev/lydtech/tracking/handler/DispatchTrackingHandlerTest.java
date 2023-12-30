@@ -7,11 +7,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 import static org.mockito.Mockito.*;
 
-public class DispatchPreparingHandlerTest {
+public class DispatchTrackingHandlerTest {
 
     private TrackingService trackingServiceMock;
 

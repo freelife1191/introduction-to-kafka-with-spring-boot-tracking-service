@@ -1,21 +1,21 @@
 # Introduction to Kafka with Spring Boot - Tracking Service
 
-This repository contains the code to support the [Introduction to Kafka with Spring Boot](https://www.udemy.com/course/introduction-to-kafka-with-spring-boot/?referralCode=15118530CA63AD1AF16D) online course, for the Tracking Service portion of the course.
+이 저장소에는 [Spring Boot를 사용한 Kafka 소개](https://www.udemy.com/course/introduction-to-kafka-with-spring-boot/?referralCode=15118530CA63AD1AF16D) 온라인 과정을 지원하는 코드가 포함되어 있습니다. 코스의 추적 서비스 부분.
 
-The associated repository for the Dispatch Service can be found here:  [Dispatch Service Repository](https://github.com/lydtechconsulting/introduction-to-kafka-with-spring-boot)
+디스패치 서비스 관련 저장소는 [디스패치 서비스 저장소](https://github.com/lydtechconsulting/introduction-to-kafka-with-spring-boot)에서 찾을 수 있습니다.
 
-The application code is for a message driven service which utilises Kafka and Spring Boot 3.
+애플리케이션 코드는 Kafka 및 Spring Boot 3을 활용하는 메시지 기반 서비스용입니다.
 
-The code in this repository is used to help students learn how to produce and consume messages in Java using Spring Kafka and Spring Boot 3.
-The course provides step by step instructions and detailed explanations for students to build up the code themselves.
-This repository provides the code to support the course broken down section by section using branches, allowing students to
-compare and contrast the code they create with the lesson code in the branches.
+이 저장소의 코드는 학생들이 Spring Kafka 및 Spring Boot 3을 사용하여 Java에서 메시지를 생성하고 사용하는 방법을 배우는 데 사용됩니다.
+이 과정은 학생들이 스스로 코드를 구축할 수 있도록 단계별 지침과 자세한 설명을 제공합니다.
+이 저장소는 분기를 사용하여 섹션별로 세분화된 과정을 지원하는 코드를 제공하므로 학생들은 다음을 수행할 수 있습니다.
+그들이 만든 코드를 브랜치의 수업 코드와 비교하고 대조해 보세요.
 
-As you work through the course, please feel free to fork this repository to your own GitHub repo. Most lectures contain links
-to source code changes. If you encounter a problem you can compare your code to the lecture code. See the [How to Compare Branches](https://github.com/lydtechconsulting/introduction-to-kafka-with-spring-boot/wiki#how-to-compare-branches) section in the Wiki.
+과정을 진행하면서 자유롭게 이 저장소를 자신의 GitHub 저장소로 포크해 보세요. 대부분의 강의에는 링크가 포함되어 있습니다.
+소스 코드 변경 사항. 문제가 발생하면 코드를 강의 코드와 비교할 수 있습니다. Wiki의 [분기 비교 방법](https://github.com/lydtechconsulting/introduction-to-kafka-with-spring-boot/wiki#how-to-compare-branches) 섹션을 참조하세요.
 
 ## Introduction to Kafka with Spring Boot Course Wiki
-Plenty of useful information about your Introduction to Kafka with Spring Boot course can be found in the [Wiki](https://github.com/lydtechconsulting/introduction-to-kafka-with-spring-boot/wiki).
+Spring Boot를 사용한 Kafka 소개 과정에 대한 유용한 정보는 다음에서 찾을 수 있습니다. [Wiki](https://github.com/lydtechconsulting/introduction-to-kafka-with-spring-boot/wiki).
 
 
 ## Getting Your Development Environment Setup
@@ -32,3 +32,32 @@ Plenty of useful information about your Introduction to Kafka with Spring Boot c
 ## Connect with the team at Lydtech Consulting
 * Visit us at [lydtechconsulting.com](https://www.lydtechconsulting.com/)
 * Visit our [LinkedIn](https://www.linkedin.com/company/lydtech-consulting) page
+
+
+# 2. Integration Test Assignment
+
+## 과제
+- 스프링 부트 통합 테스트에 필요한 적절한 클래스 주석을 사용하여 추적 서비스에서 새 통합 테스트 클래스를 만든다
+- **Tracking.status** 주제 에서 사용하도록 KafkaTestListener를 설정합니다 . 리스너는 메시지가 소비될 때마다 카운터를 증가
+- 스프링 컨텍스트에 리스너를 추가하고 통합 테스트에 자동 연결
+- **테스트는 DispatchPreparing 이벤트를 dispatch.tracking** 주제 로 보내 므로 KafkaTemplate을 통합 테스트 클래스에 자동으로 연결해야 함
+- 테스트에서 Awaitility 테스트 라이브러리를 사용하여 KafkaTestListener에 정의된 메시지 수신 횟수가 증가할 때까지 기다림
+- 리스너의 파티션이 할당될 충분한 시간을 갖도록 BeforeEach 테스트 설정 방법을 추가
+- 내장된 Kafka 브로커 주소를 지정하기 위해 application-test.properties 파일을 생성
+
+## 질문
+- 테스트 클래스를 통합 테스트로 표시하기 위해 어떤 주석을 사용했나요?
+    - 통합 테스트를 정의하려면 `@SpringBootTest` 주석을 사용해야 합니다. Spring 애플리케이션 컨텍스트를 부트스트랩하고 Spring 빈을 인스턴스화합니다
+- 통합 테스트에서 Kafka 인메모리 브로커 사용을 활성화하기 위해 어떤 주석을 사용했나요?
+    - `@EmbeddedKafka` 주석은 인메모리 Kafka 브로커 인스턴스를 통합 테스트에 삽입하는 데 사용해야 합니다
+- 추적 서비스에 대한 처리 흐름을 시작하기 위해 어떤 주제에 메시지를 보냈습니까?
+    - DispatchPreparing 이벤트를 `Dispatch.tracking` 주제로 보내야 합니다. 이는 추적 서비스가 메시지를 소비하는 주제이기 때문입니다
+- 주제 파티션이 할당될 충분한 시간이 있고 소비자가 테스트에서 전송된 이벤트를 사용할 준비가 되었는지 어떻게 확인했습니까?
+    - `@BeforeEach` 주석이 달린 설정 메서드를 사용한 다음 `ContainerTestUtils.waitForAssignment` 도우미 메서드를 사용하여 각 컨테이너에 파티션이 할당될 때까지 기다려야 합니다.
+- 추적 서비스가 처리 흐름을 성공적으로 완료했음을 어떻게 증명했나요?
+    - 메시지가 `Tracking.status`로 전송되면 추적 서비스가 DispatchPreparing 메시지를 성공적으로 처리한 것입니다. 따라서 통합 테스트는 추적 상태 주제 메시지 카운터가 증가할 때까지 최대 몇 초 동안 기다려야 합니다
+
+```bash
+bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic dispatch.tracking
+>{"orderId":"7c4d32e9-4999-434b-953a-9467f09b023f"}
+```
