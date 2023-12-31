@@ -67,7 +67,7 @@ bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic dispatch
 
 이 과제에서는 서비스가 `dispatch.tracking` 주제 에 대한 여러 이벤트 유형을 처리할 수 있도록 하는 방법을 모색하고 있다
 
-![](Pasted%20image%2020231231113737.png)
+![](attachments/20231231113737.png)
 
 #### 예상되는 변화
 새 서비스를 생성하고 테스트하는 데 필요한 모든 코드와 단계는 이전 모듈에서 다루었다
