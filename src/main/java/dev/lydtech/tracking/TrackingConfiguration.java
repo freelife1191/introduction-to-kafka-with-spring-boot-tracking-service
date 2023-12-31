@@ -22,22 +22,28 @@ import java.util.Map;
 @ComponentScan(basePackages = { "dev.lydtech"})
 public class TrackingConfiguration {
 
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, DispatchPreparing> kafkaListenerContainerFactory(ConsumerFactory<String, DispatchPreparing> consumerFactory) {
-        final ConcurrentKafkaListenerContainerFactory<String, DispatchPreparing> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    private static String TRUSTED_PACKAGES = "dev.lydtech.dispatch.message";
+
+    @Bean // 여러 이벤트 유형을 처리하기 위해 DispatchPreparing -> Object로 변환
+    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(ConsumerFactory<String, Object> consumerFactory) {
+        final ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         return factory;
     }
 
-    @Bean
-    public ConsumerFactory<String, DispatchPreparing> consumerFactory(@Value("${kafka.bootstrap.servers}") String bootstrapServers) {
+    @Bean // 여러 이벤트 유형을 처리하기 위해 DispatchPreparing -> Object로 변환
+    public ConsumerFactory<String, Object> consumerFactory(@Value("${kafka.bootstrap.servers}") String bootstrapServers) {
         final Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, DispatchPreparing.class);
+        // Kafka는 명시적으로 구성되지 않는 한 이벤트를 생성할 때 이 메시지 헤더를 자동으로 추가함
+        // 추적 서비스가 소비하는 이벤트는 발송 서비스에서 발생하므로 이 헤더가 존재하므로 주석처리
+        // config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, DispatchPreparing.class);
         config.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
         config.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
+        // 해당 패키지 아래의 이벤트를 신뢰할 수 있고 Deserialized 할 수 있음을 알림
+        config.put(JsonDeserializer.TRUSTED_PACKAGES, TRUSTED_PACKAGES);
         return new DefaultKafkaConsumerFactory<>(config);
     }
 
