@@ -22,7 +22,7 @@ import java.util.Map;
 @ComponentScan(basePackages = { "dev.lydtech"})
 public class TrackingConfiguration {
 
-    private static String TRUSTED_PACKAGES = "dev.lydtech.dispatch.message";
+    private static final String TRUSTED_PACKAGES = "dev.lydtech.dispatch.message";
 
     @Bean // 여러 이벤트 유형을 처리하기 위해 DispatchPreparing -> Object로 변환
     public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(ConsumerFactory<String, Object> consumerFactory) {

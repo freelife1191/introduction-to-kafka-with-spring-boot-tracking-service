@@ -34,9 +34,10 @@ Spring Boot를 사용한 Kafka 소개 과정에 대한 유용한 정보는 다�
 * Visit our [LinkedIn](https://www.linkedin.com/company/lydtech-consulting) page
 
 
-# 2. Integration Test Assignment
+# 7. Spring Boot Integration Test
+## 2. Integration Test Assignment
 
-## 과제
+### 과제
 - 스프링 부트 통합 테스트에 필요한 적절한 클래스 주석을 사용하여 추적 서비스에서 새 통합 테스트 클래스를 만든다
 - **Tracking.status** 주제 에서 사용하도록 KafkaTestListener를 설정합니다 . 리스너는 메시지가 소비될 때마다 카운터를 증가
 - 스프링 컨텍스트에 리스너를 추가하고 통합 테스트에 자동 연결
@@ -45,7 +46,7 @@ Spring Boot를 사용한 Kafka 소개 과정에 대한 유용한 정보는 다�
 - 리스너의 파티션이 할당될 충분한 시간을 갖도록 BeforeEach 테스트 설정 방법을 추가
 - 내장된 Kafka 브로커 주소를 지정하기 위해 application-test.properties 파일을 생성
 
-## 질문
+### 질문
 - 테스트 클래스를 통합 테스트로 표시하기 위해 어떤 주석을 사용했나요?
     - 통합 테스트를 정의하려면 `@SpringBootTest` 주석을 사용해야 합니다. Spring 애플리케이션 컨텍스트를 부트스트랩하고 Spring 빈을 인스턴스화합니다
 - 통합 테스트에서 Kafka 인메모리 브로커 사용을 활성화하기 위해 어떤 주석을 사용했나요?
@@ -61,3 +62,46 @@ Spring Boot를 사용한 Kafka 소개 과정에 대한 유용한 정보는 다�
 bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic dispatch.tracking
 >{"orderId":"7c4d32e9-4999-434b-953a-9467f09b023f"}
 ```
+
+# 11. Assignment Multiple Event Type
+
+이 과제에서는 서비스가 `dispatch.tracking` 주제 에 대한 여러 이벤트 유형을 처리할 수 있도록 하는 방법을 모색하고 있다
+
+![](Pasted%20image%2020231231113737.png)
+
+#### 예상되는 변화
+새 서비스를 생성하고 테스트하는 데 필요한 모든 코드와 단계는 이전 모듈에서 다루었다
+
+**파견 서비스**
+`dispatch.tracking` 이라는 새 주제에 대해 `DispatchCompleted` 이벤트를 내보내는 디스패치 서비스
+`DispatchCompleted` 이벤트의 페이로드는 다음과 같다
+
+1. 주문 ID : UUID
+2. 날짜 : 문자열
+
+날짜 필드의 유일한 목적은 `DispatchCompleted` 이벤트와 `DispatchPreparing` 이벤트를 구별하는 것
+
+**추적 서비스**
+추적 서비스는 이제 새로운 `DispatchCompleted` 이벤트를 소비하고 차례로 새로운 상태 'COMPLETED'로 `TrackingStatusUpdated` 이벤트를 내보내도록 변경해야 함
+
+추적 서비스는 단일 주제에서 여러 이벤트 유형을 사용한다. 이를 위해서는 특히 `@KafkaListener` 및 `@KafkaHandler` 주석 사용과 관련하여 소비자의 재작업이 필요
+
+**테스트**
+두 서비스 모두에 대한 변경 사항에는 단위 테스트 적용 범위가 있어야 한다
+
+**통합 테스트**
+`DispatchCompleted` 이벤트를 테스트하려면 추적 서비스 통합 테스트를 업데이트해야 한다
+
+Dispatch Service의 통합 테스트는 `dispatch.tracking` 주제의 소비자 역할을 하므로 Tracking Service 핸들러에서 구현된 것과 유사하게 여러 이벤트를 처리하기 위한 변경도 필요하다
+
+디스패치 서비스 통합 테스트에서는 통합 테스트의 `waitForAssignment` 메소드를 업데이트해야 한다. 이제 두 개의 애플리케이션 리스너 컨테이너가 있다. 하나는 애플리케이션용이고 다른 하나는 테스트 자체용이며, 다른 수의 주제를 수신하는 것을 고려해야 한다. 다음 코드는 수행해야 할 변경 사항을 보여준다
+
+```java
+ContainerTestUtils.waitForAssignment(container, container.getContainerProperties().getTopics().length * embeddedKafkaBroker.getPartitionsPerTopic()));
+```
+
+#### 이 과제에 대한 질문
+1. `Dispatch.tracking` 주제에서 `DispatchPreparing` 및 `DispatchCompleted` 이벤트를 모두 사용할 수 있도록 추적 서비스 핸들러의 주요 변경 사항은 무엇입니까?
+  - 동일한 주제에서 여러 이벤트 유형을 사용하기 위해 `@KafkaListener` 주석이 클래스 수준으로 이동되고 각 이벤트 유형에 대해 하나씩 두 개의 청취 메서드에 `@KafkaHandler` 주석이 추가된다
+2. 들어오는 이벤트의 Java 유형 표현을 신뢰할 수 있는지 어떻게 확인했습니까?
+  - 이제 수신 주제에 여러 이벤트 유형이 있으므로 `ConsumerFactory`의 기본 유형 구성을 제거해야 했다. 그 자리에 `JsonDeserializer.TRUSTED_PACKAGES` 구성이 추가되어 Spring Kafka가 신뢰할 수 있는 이벤트 유형의 Java 표현 위치를 알 수 있다.

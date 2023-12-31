@@ -1,13 +1,16 @@
 package dev.lydtech.tracking.handler;
 
+import dev.lydtech.dispatch.message.DispatchCompleted;
 import dev.lydtech.dispatch.message.DispatchPreparing;
 import dev.lydtech.tracking.service.TrackingService;
 import dev.lydtech.tracking.util.TestEventData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
+import static java.util.UUID.randomUUID;
 import static org.mockito.Mockito.*;
 
 public class DispatchTrackingHandlerTest {
@@ -23,19 +26,36 @@ public class DispatchTrackingHandlerTest {
     }
 
     @Test
-    public void listen_Success() throws Exception {
-        DispatchPreparing testEvent = TestEventData.buildDispatchPreparingEvent(UUID.randomUUID());
+    public void listen_DispatchPreparing() throws Exception {
+        DispatchPreparing testEvent = TestEventData.buildDispatchPreparingEvent(randomUUID());
         handler.listen(testEvent);
-        verify(trackingServiceMock, times(1)).process(testEvent);
+        verify(trackingServiceMock, times(1)).processDispatchPreparing(testEvent);
     }
 
     @Test
-    public void listen_ServiceThrowsException() throws Exception {
-        DispatchPreparing testEvent = TestEventData.buildDispatchPreparingEvent(UUID.randomUUID());
-        doThrow(new RuntimeException("Service failure")).when(trackingServiceMock).process(testEvent);
+    public void listen_DispatchPreparingException() throws Exception {
+        DispatchPreparing testEvent = TestEventData.buildDispatchPreparingEvent(randomUUID());
+        doThrow(new RuntimeException("Service failure")).when(trackingServiceMock).processDispatchPreparing(testEvent);
 
         handler.listen(testEvent);
 
-        verify(trackingServiceMock, times(1)).process(testEvent);
+        verify(trackingServiceMock, times(1)).processDispatchPreparing(testEvent);
+    }
+
+    @Test
+    public void listen_DispatchCompleted() throws Exception {
+        DispatchCompleted testEvent = TestEventData.buildDispatchCompletedEvent(randomUUID(), LocalDate.now().toString());
+        handler.listen(testEvent);
+        verify(trackingServiceMock, times(1)).processDispatched(testEvent);
+    }
+
+    @Test
+    public void listen_DispatchCompletedThrowsException() throws Exception {
+        DispatchCompleted testEvent = TestEventData.buildDispatchCompletedEvent(randomUUID(), LocalDate.now().toString());
+        doThrow(new RuntimeException("Service failure")).when(trackingServiceMock).processDispatched(testEvent);
+
+        handler.listen(testEvent);
+
+        verify(trackingServiceMock, times(1)).processDispatched(testEvent);
     }
 }
